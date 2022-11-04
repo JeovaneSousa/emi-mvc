@@ -10,6 +10,7 @@ import UIKit
 class RelatorioDeDespesasViewController: UIViewController {
     
 
+    typealias MensagemDeErro = String
     
     @IBOutlet weak var tituloTextField: UITextField!
     @IBOutlet weak var tipoTextField: UITextField!
@@ -21,10 +22,19 @@ class RelatorioDeDespesasViewController: UIViewController {
     
     @IBOutlet weak var registrarButton: UIButton!
     
-    typealias MensagemDeErro = String
+    var relatorioDeDespesas: RelatorioDeDespesas?{
+        didSet{
+            guard isViewLoaded, let relatorioDeDespesas = relatorioDeDespesas else {return}
+            atualizaViews(para: relatorioDeDespesas)
+        }
+    }
+    
     
     override func viewDidLoad(){
         super.viewDidLoad()
+        if let relatorioDeDespesas = relatorioDeDespesas{
+            atualizaViews(para: relatorioDeDespesas)
+        }
     }
     
     func exibirAlerta(para mensagemDeErro: MensagemDeErro?){
@@ -43,15 +53,34 @@ class RelatorioDeDespesasViewController: UIViewController {
             exibirAlerta(para: mensagem)
         default:
             print("Sucesss")
-//            adicionaDespesas()
+            adicionaDespesa()
         }
-    
-        
-        print("Adicionar despesas pressionado")
     }
     
-//    @IBAction func botaoRegistrarDespesasPressionado(_ sender: UIButton) {
-//    print("Registrar despesas pressionado")
-//    }
+    @IBAction func botaoRegistrarDespesasPressionado(_ sender: UIButton) {
+    print("Registrar despesas pressionado")
+    }
     
+    
+    
+    func adicionaDespesa(){
+        let codigo = Int(tipoTextField.text!)!
+        let tipo = Despesa.Tipo(rawValue: codigo)!
+        let titulo = tituloTextField.text!
+        let valor = Converter.paraDecimal(string: valorTextField.text!)!
+        
+        let despesa = Despesa(titulo: titulo, tipo: tipo, valor: valor)
+        relatorioDeDespesas?.adiciona(despesa)
+    }
+    
+    func atualizaViews(para relatorio: RelatorioDeDespesas) {
+        listaDeDespesasView.atualiza(relatorio.despesas)
+        
+        valorTotalLabel.text = Formatter.paraMoeda(decimal: relatorio.valorTotal)
+        registrarButton.isEnabled = relatorio.valorTotal > 0
+    }
+    
+    
+    
+
 }
